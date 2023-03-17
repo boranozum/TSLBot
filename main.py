@@ -5,34 +5,55 @@ from keepalive import keep_alive
 from discord.ext import commands
 from datetime import date
 from Leauge import League
+from Leauge import getTeamIdByName
 
 client = commands.Bot(command_prefix = "$")
 league = League(league_id=203)
 
+commands = {
+    'help': 'help',
+    'standings': 'standings',
+    'fixtures': 'fixtures',
+}
+
+
+async def handle_help_command(message):
+  help_message = "Here are the available commands:\n\n"
+  for command, description in commands.items():
+      help_message += f"`{command}`: {description}\n"
+  await message.channel.send(help_message)
+
+async def handle_command(message):
+    # Parse the message to get the command and any arguments
+    command, *args = message.content[1:].split()
+
+    # Check if the command is "help" and call the handle_help_command function if it is
+    if command == "help":
+        await handle_help_command(message)
+
+@client.event
+async def on_message(message):
+  if message.content.startswith("$"): 
+      await handle_command(message)
+
 async def on_ready(self):
     print('Logged on as', self.user)
 
-@client.command()
-async def puan(ctx):  
+@client.command(name='standings', help='Get the league standings')
+async def standings(ctx):  
   league.setStandings()
   embed = discord.Embed(title = 'Süper Lig - Puan Durumu', description = league.printStandings(), color=discord.Colour.random())
   await ctx.send(embed=embed)
 
 @client.command()
 async def fix(ctx,arg):
-  DATASET = helper.getFixture(arg)
 
-  s = ["   Tarih                      Maç"]
+  team_id = getTeamIdByName(arg)
 
-  for data in DATASET:
-    if len(data)==3:
-      s.append(data[0].center(12," ")+(data[1] + " - " +data[2]).center(40," "))
-    else:
-      s.append(data[0].center(12," ")+(data[1] + "{} - {}".format(data[2],data[4]) +data[3]).center(40," "))
+  team = league.teams[team_id]
+  team.setMatches()
 
-  d = '```'+'\n'.join(s) + '```'
-
-  embed = discord.Embed(title = "{} - Fikstür".format(arg), description=d,color=discord.Colour.random())
+  embed = discord.Embed(title = "{} - Fikstür".format(arg), description=team.printMatches(),color=discord.Colour.random())
   embed.set_thumbnail(url=helper.thumbnail(arg))
 
   await ctx.send(embed=embed)
@@ -138,6 +159,8 @@ async def hafta(ctx):
 
   embed.set_footer(text= "-* : Maç devam ediyor")
   await ctx.send(embed=embed)
+
+
 
 keep_alive()
 
