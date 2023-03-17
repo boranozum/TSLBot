@@ -4,22 +4,18 @@ import helper
 from keepalive import keep_alive
 from discord.ext import commands
 from datetime import date
+from Leauge import League
 
 client = commands.Bot(command_prefix = "$")
+league = League(league_id=203)
 
 async def on_ready(self):
     print('Logged on as', self.user)
 
 @client.command()
 async def puan(ctx):  
-  DATASET = helper.getTable()
-  s = [' Sıra       Takım        O   G   B   M   A   Y  Avg. P']
-  for data in DATASET:
-      s.append(data[0].center(5,' ')+data[1].center(19,' ')+data[2].center(4, ' ')+data[3].center(4, ' ')+data[4].center(4, ' ')+data[5].center(4, ' ')+data[6].center(4, ' ')+data[7].center(4, ' ')+data[8].center(4, ' ')+data[9].center(4, ' '))
-        # Joining up scores into a line
-  d = '```'+'\n'.join(s) + '```'
-    # Joining all lines together! 
-  embed = discord.Embed(title = 'Süper Lig - Puan Durumu', description = d, color=discord.Colour.random())
+  league.setStandings()
+  embed = discord.Embed(title = 'Süper Lig - Puan Durumu', description = league.printStandings(), color=discord.Colour.random())
   await ctx.send(embed=embed)
 
 @client.command()
