@@ -4,37 +4,11 @@ import helper
 from keepalive import keep_alive
 from discord.ext import commands
 from datetime import date
-from Leauge import League
-from Leauge import getTeamIdByName
+from League import League
+from utils import getTeamIdByName, printWeek
 
 client = commands.Bot(command_prefix = "$")
 league = League(league_id=203)
-
-commands = {
-    'help': 'help',
-    'standings': 'standings',
-    'fixtures': 'fixtures',
-}
-
-
-async def handle_help_command(message):
-  help_message = "Here are the available commands:\n\n"
-  for command, description in commands.items():
-      help_message += f"`{command}`: {description}\n"
-  await message.channel.send(help_message)
-
-async def handle_command(message):
-    # Parse the message to get the command and any arguments
-    command, *args = message.content[1:].split()
-
-    # Check if the command is "help" and call the handle_help_command function if it is
-    if command == "help":
-        await handle_help_command(message)
-
-@client.event
-async def on_message(message):
-  if message.content.startswith("$"): 
-      await handle_command(message)
 
 async def on_ready(self):
     print('Logged on as', self.user)
@@ -101,63 +75,13 @@ async def onbir(ctx,arg):
 
 
 @client.command()
-async def hafta(ctx):
-  DATASET = helper.getWeek()
+async def week(ctx):
 
-  dates = {}
-  for data in DATASET["matches"]:
-    if data["status"] == "NS":
-      if data["match_date"] not in dates:
-        dates[data["match_date"]] = [data["match_time"] +data["home"]["team"]+" - "+data["away"]["team"]]
-      else:
-        dates[data["match_date"]].append(data["match_time"] +data["home"]["team"]+" - "+data["away"]["team"])
-    elif data["status"] != "FT":
-      if data["match_date"] not in dates:
-        dates[data["match_date"]] = [data["match_time"] +data["home"]["team"]+ " " +str(data["home"]["goal"])  +" -* " +str(data["away"]["goal"])+ " " +data["away"]["team"]] 
-      else:
-        dates[data["match_date"]].append(data["match_time"] +data["home"]["team"]+ " " +str(data["home"]["goal"]) + " -* " +str(data["away"]["goal"])+ " " +data["away"]["team"])
-      
-    else:
-      if data["match_date"] not in dates:
-        dates[data["match_date"]] = [data["match_time"] +data["home"]["team"]+ " " +str(data["home"]["goal"]) + " - " +str(data["away"]["goal"])+ " " +data["away"]["team"]]
-      else:
-        dates[data["match_date"]].append(data["match_time"] +data["home"]["team"]+ " " +str(data["home"]["goal"]) + " - " +str(data["away"]["goal"])+ " " +data["away"]["team"])
-
+  week = printWeek()
     
-  dates = dict(sorted(dates.items()))
-  
-  s = []
+  embed = discord.Embed(color=discord.Colour.random(),description = week)
 
-  
-
-  for day in dates:
-    y = date(int(day[:4]),int(day[5:7]),int(day[8:10]))
-    if y.strftime("%A") == "Monday":
-      dd = day[8:10] + "." + day[5:7] + "." + day[:4] + " - " + "Pazartesi"
-    if y.strftime("%A") == "Tuesday":
-      dd = day[8:10] + "." + day[5:7] + "." + day[:4] + " - " + "Salı"
-    if y.strftime("%A") == "Wednesday":
-      dd = day[8:10] + "." + day[5:7] + "." + day[:4] + " - " + "Çarşamba"
-    if y.strftime("%A") == "Thursday":
-      dd = day[8:10] + "." + day[5:7] + "." + day[:4] + " - " + "Perşembe"
-    if y.strftime("%A") == "Friday":
-      dd = day[8:10] + "." + day[5:7] + "." + day[:4] + " - " + "Cuma"
-    if y.strftime("%A") == "Saturday":
-      dd = day[8:10] + "." + day[5:7] + "." + day[:4] + " - " + "Cumartesi"
-    if y.strftime("%A") == "Sunday":
-      dd = day[8:10] + "." + day[5:7] + "." + day[:4] + " - " + "Pazar"
-    s.append("  "+dd+"\n")
-
-    for match in sorted(dates[day]):
-      s.append("     " + match[:5] + match[5:].center(50," "))
-
-    s.append("\n")
-    
-  d = '```'+'\n'.join(s) + '```'
-    
-  embed = discord.Embed(title = "Süper Lig {}. Hafta".format(DATASET["week"]),color=discord.Colour.random(),description = d)
-
-  embed.set_footer(text= "-* : Maç devam ediyor")
+  embed.set_footer(text= "* : Live")
   await ctx.send(embed=embed)
 
 
