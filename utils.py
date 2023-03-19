@@ -5,6 +5,7 @@ import requests
 
 from Parser import Parser
 from model.Game import Game
+import pytz
 
 
 def thumbnail(team_name):
@@ -53,9 +54,9 @@ def getMatchesByRound(round):
             continue
         timestamp = match['fixture']['timestamp']
         # get the date, time and day of the week from the timestamp
-        date = datetime.datetime.fromtimestamp(timestamp).strftime('%d-%m-%Y')
-        time = datetime.datetime.fromtimestamp(timestamp).strftime('%H:%M')
-        day = datetime.datetime.fromtimestamp(timestamp).strftime('%A')
+        date = datetime.datetime.fromtimestamp(timestamp, pytz.timezone('Europe/Istanbul')).strftime('%d-%m-%Y')
+        time = datetime.datetime.fromtimestamp(timestamp, pytz.timezone('Europe/Istanbul')).strftime('%H:%M')
+        day = datetime.datetime.fromtimestamp(timestamp, pytz.timezone('Europe/Istanbul')).strftime('%A')
         elapsed = match['fixture']['status']['elapsed']
 
         game = Game(
