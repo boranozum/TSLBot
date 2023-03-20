@@ -73,9 +73,9 @@ class Game:
         for event in response:
             if event['type'] == 'Goal':
                 e = Goal(
-                    event['minute'],
+                    event['time']['elapsed'],
                     event['team']['name'],
-                    event['extra']['time'],
+                    event['time']['extra'],
                     event['player']['name'],
                     event['assist']['name'])
 
@@ -84,6 +84,8 @@ class Game:
 
                 elif event['detail'] == 'Penalty':
                     e.penalty = True
+
+                self.events.append(e)
 
             elif event['type'] == 'Card':
                 self.events.append(

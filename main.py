@@ -11,7 +11,7 @@ from bs4 import BeautifulSoup
 import json
 
 from model.League import League
-from utils import getTeamIdByName, printWeek, thumbnail, getMatchesByRound, getCurrentRound
+from utils import getTeamIdByName, printWeek, thumbnail, getMatchesByRound, getCurrentRound, getHighlightVideo, getEventList
 
 client = commands.Bot(command_prefix="$")
 
@@ -55,48 +55,24 @@ async def week(ctx):
     await ctx.send(embed=embed)
 
 @client.command()
-async def highlight(ctx, arg):
+async def lastmatch(ctx, arg):
 
-  url_prefix = 'https://beinsports.com.tr'
+  league = League(league_id=203)
+  team_id = getTeamIdByName(arg)
 
-  response = requests.request("GET",f'https://beinsports.com.tr/takim/{arg}/videolar')
+  team = league.teams[team_id]
 
-  # turn response into a beautiful soup object
+  last_game = team.getLastMatch()
 
-  soup = BeautifulSoup(response.text, 'html.parser')
+  last_game.set_events()
 
-  # find all the divs with the class 'video-list-item'
+  
 
-  video = soup.find_all('div', class_='media-list-item')[0]
-
-  # get href
-
-  href = video.find('a')['href']
-
-  response = requests.request("GET", url_prefix + href)
-
-  soup = BeautifulSoup(response.text, 'html.parser')
-
-  script_tag = soup.find_all('script')[1]
-
-  # get content url from script tag
-
-  contents = script_tag.contents[0]
-
-  # convert to json
-
-
-  contents = json.loads(contents)
-
-  # get video url
-
-  video_url = contents['contentUrl']
+  video_url = getHighlightVideo(arg)
 
   embed = discord.Embed()
-  embed.title = "Match Highlights"
-  embed.description = "Check out the highlights from the last match!"
-  embed.set_footer(text="Provided by Example.com")
-  embed.add_field(name="Video", value=f"[Watch now]({video_url})")
+  embed.description = "```" + '\n'.join(getEventList(last_game))  + "```"
+  embed.add_field(name="Highlights", value=f"[Watch now]({video_url})")
 
   await ctx.send(embed=embed)
 

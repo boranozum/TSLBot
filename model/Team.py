@@ -23,10 +23,21 @@ class Team:
 
         response = Parser('https://api-football-v1.p.rapidapi.com/v3/fixtures', {
             'team': team_id,
-            'last': 2
+            'last': 1,
+            'status': 'FT'
         }).get_data()
 
-        self.last_match = response[-1]
+        self.last_match = Game(
+            response[-1]['fixture']['id'],
+            response[-1]['teams']['home']['name'],
+            response[-1]['teams']['away']['name'],
+            response[-1]['goals']['home'],
+            response[-1]['goals']['away'],
+            status=response[-1]['fixture']['status']['short'],
+            date=response[-1]['fixture']['date'],
+        )
+
+
 
     def setStandings(self, rank, points, goalsDiff, form, played, won, draw, lost, goalsFor, goalsAgainst):
         self.rank = rank

@@ -14,6 +14,9 @@ class League:
         for key in response:
             self.teams[key['team']['id']] = Team(key['team']['id'], key['team']['name'], key['team']['logo'])
 
+    def getTeam(self, team_id):
+        return self.teams[team_id]
+
     def setStandings(self):
 
         response = Parser('https://api-football-v1.p.rapidapi.com/v3/standings', {
